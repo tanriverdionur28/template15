@@ -1566,10 +1566,15 @@ async def hesapla_hakedis(construction_id: str, current_user: User = Depends(get
     if not construction:
         raise HTTPException(status_code=404, detail="İnşaat bulunamadı")
     
-    toplam_m2 = float(construction.get('toplamM2', 500))
+    # yapiInsaatAlani field'ını kullan (toplamM2 değil)
+    yapi_alani = construction.get('yapiInsaatAlani', '500')
+    try:
+        toplam_m2 = float(yapi_alani) if yapi_alani else 500.0
+    except (ValueError, TypeError):
+        toplam_m2 = 500.0
     
-    # Denetim kayıtlarını al
-    inspections = await db.inspections.find({"yibfNo": construction.get('yibfNo')}).to_list(1000)
+    # Denetim kayıtlarını al (site_inspections collection'ından)
+    inspections = await db.site_inspections.find({"yibfNo": construction.get('yibfNo')}).to_list(1000)
     
     # Beton dökümleri
     beton_dokumleri = [i for i in inspections if i.get('betonDokumTarihi')]
