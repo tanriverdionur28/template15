@@ -325,11 +325,11 @@ const Inspections = () => {
               />
 
               {/* Şantiye Defteri Checklist */}
-              <div className="space-y-3 bg-amber-50 p-4 rounded-lg border-2 border-amber-300">
-                <Label className="text-base font-semibold text-amber-900">
-                  ⚠️ Şantiye Defteri Kontrolü
+              <div className="space-y-3">
+                <Label htmlFor="santiye-defteri-onay" className="text-base font-semibold text-slate-700">
+                  Şantiye Defteri Kontrolü
                 </Label>
-                <div className="flex items-start space-x-3 p-3 bg-white rounded border border-amber-200">
+                <div className="flex items-start space-x-3 p-3 bg-slate-50 rounded border border-slate-200">
                   <Checkbox
                     id="santiye-defteri-onay"
                     checked={formData.santiyeDefteriBilgileriOnaylandi}
@@ -345,16 +345,8 @@ const Inspections = () => {
                     >
                       Şantiye defteri bilgileri yazılıp onaylandı mı?
                     </label>
-                    <p className="text-xs text-slate-500 mt-1">
-                      Bu alan işaretlenmezse, durum Süper Admin'e otomatik raporlanacaktır.
-                    </p>
                   </div>
                 </div>
-                {!formData.santiyeDefteriBilgileriOnaylandi && (
-                  <div className="text-xs text-amber-700 bg-amber-100 p-2 rounded border border-amber-300">
-                    ⚠️ Dikkat: Şantiye defteri onaylanmadı. Kayıt sonrası Süper Admin'e bildirilecek.
-                  </div>
-                )}
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
