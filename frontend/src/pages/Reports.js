@@ -274,7 +274,7 @@ const Reports = () => {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-orange-700">
-                <AlertTriangle className="w-5 h-5" />
+                <FileText className="w-5 h-5" />
                 Beton Dökülmeyen İnşaatlar ({rapor.beton_dokulmeyen.length})
               </CardTitle>
             </CardHeader>
