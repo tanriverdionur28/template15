@@ -25,6 +25,8 @@ db = client[os.environ['DB_NAME']]
 
 # JWT Configuration
 SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'your-secret-key-change-in-production')
+if SECRET_KEY == 'your-secret-key-change-in-production':
+    logger.warning("⚠️  WARNING: Using default JWT_SECRET_KEY! Change this in production!")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30 * 24 * 60  # 30 days
 
