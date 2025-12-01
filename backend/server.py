@@ -2077,10 +2077,14 @@ async def get_dashboard_stats(current_user: User = Depends(get_current_user)):
 # Include router
 app.include_router(api_router)
 
+cors_origins = os.environ.get('CORS_ORIGINS', '*').split(',')
+if '*' in cors_origins:
+    logger.warning("⚠️  WARNING: CORS is open to all origins! Restrict this in production!")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origins=cors_origins,
     allow_methods=["*"],
     allow_headers=["*"],
 )
