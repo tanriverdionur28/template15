@@ -138,7 +138,7 @@ const Reports = () => {
                   {rapor.beton_dokulmeyen.length}
                 </p>
               </div>
-              <AlertTriangle className="w-10 h-10 text-orange-500" />
+              <FileText className="w-10 h-10 text-orange-500" />
             </div>
           </CardContent>
         </Card>
