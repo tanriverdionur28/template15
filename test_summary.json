@@ -1,0 +1,89 @@
+{
+  "summary": {
+    "total": 13,
+    "passed": 13,
+    "failed": 0,
+    "success_rate": 100.0
+  },
+  "tests": [
+    {
+      "name": "Login ba\u015far\u0131l\u0131",
+      "passed": true,
+      "message": "Token al\u0131nd\u0131",
+      "timestamp": "2025-12-01T23:42:27.065478"
+    },
+    {
+      "name": "Dashboard stats",
+      "passed": true,
+      "message": "Gerekli t\u00fcm alanlar mevcut",
+      "timestamp": "2025-12-01T23:42:27.070919"
+    },
+    {
+      "name": "Inspection Create",
+      "passed": true,
+      "message": "ID: bb4ec014-95be-4af6-989e-8855884ebebf",
+      "timestamp": "2025-12-01T23:42:27.074181"
+    },
+    {
+      "name": "Inspection Read",
+      "passed": true,
+      "message": "Kay\u0131t okundu",
+      "timestamp": "2025-12-01T23:42:27.076647"
+    },
+    {
+      "name": "Inspection Delete",
+      "passed": true,
+      "message": "Kay\u0131t silindi",
+      "timestamp": "2025-12-01T23:42:27.079157"
+    },
+    {
+      "name": "Hakedi\u015f Hesaplama",
+      "passed": true,
+      "message": "Toplam M\u00b2: 1500.5 (yapiInsaatAlani field'\u0131ndan)",
+      "timestamp": "2025-12-01T23:42:27.154380"
+    },
+    {
+      "name": "Companies List",
+      "passed": true,
+      "message": "1 firma bulundu",
+      "timestamp": "2025-12-01T23:42:27.160306"
+    },
+    {
+      "name": "Companies by Type",
+      "passed": true,
+      "message": "Laboratuvar firmalar\u0131 listelendi",
+      "timestamp": "2025-12-01T23:42:27.166439"
+    },
+    {
+      "name": "Backend .env",
+      "passed": true,
+      "message": "T\u00fcm gerekli de\u011fi\u015fkenler mevcut",
+      "timestamp": "2025-12-01T23:42:27.166605"
+    },
+    {
+      "name": "Frontend .env",
+      "passed": true,
+      "message": "REACT_APP_BACKEND_URL mevcut",
+      "timestamp": "2025-12-01T23:42:27.166650"
+    },
+    {
+      "name": "Shutdown Function",
+      "passed": true,
+      "message": "Fonksiyon tamamland\u0131 ve logger eklendi",
+      "timestamp": "2025-12-01T23:42:27.166956"
+    },
+    {
+      "name": "AuthContext Cleanup",
+      "passed": true,
+      "message": "Duplicate kod temizlendi",
+      "timestamp": "2025-12-01T23:42:27.167020"
+    },
+    {
+      "name": "Register Route",
+      "passed": true,
+      "message": "Route eklendi",
+      "timestamp": "2025-12-01T23:42:27.167051"
+    }
+  ],
+  "timestamp": "2025-12-01T23:42:27.167133"
+}
