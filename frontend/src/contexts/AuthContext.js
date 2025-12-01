@@ -7,26 +7,9 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const checkAuth = async () => {
-    const token = localStorage.getItem('token');
-    const savedUser = localStorage.getItem('user');
-    
-    if (token && savedUser) {
-      try {
-        const response = await api.get('/auth/me');
-        setUser(response.data);
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
-    setLoading(false);
-  };
-
   useEffect(() => {
     // Initial auth check on mount
-    const initAuth = async () => {
+    const checkAuth = async () => {
       const token = localStorage.getItem('token');
       const savedUser = localStorage.getItem('user');
       
@@ -43,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(false);
     };
     
-    initAuth();
+    checkAuth();
   }, []);
 
   const login = async (email, password) => {
