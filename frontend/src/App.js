@@ -57,6 +57,11 @@ const AppRoutes = () => {
           <Login />
         </PublicRoute>
       } />
+      <Route path="/register" element={
+        <PublicRoute>
+          <Register />
+        </PublicRoute>
+      } />
       <Route path="/dashboard" element={
         <PrivateRoute>
           <Layout>
