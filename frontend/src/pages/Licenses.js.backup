@@ -1,0 +1,549 @@
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Plus, Edit, Trash2, Search, Loader2, FileCheck } from 'lucide-react';
+import api from '@/lib/api';
+import { toast } from 'sonner';
+import { RUHSAT_EVRAK_DURUM, PROJE_DURUM_OPTIONS } from '@/lib/constants';
+import { useAuth } from '@/contexts/AuthContext';
+
+const Licenses = () => {
+  const { user } = useAuth();
+  const [licenses, setLicenses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [editingId, setEditingId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [saving, setSaving] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    insaatIsmi: '',
+    yibfNo: '',
+    ruhsatEvraklariTamam: '',
+    projelerKontrolEdildi: '',
+    projeDurumu: '',
+    arsivdeOnayliProjeler: '',
+    dijitalArsivYapildi: '',
+    dijitalArsivTarihi: '',
+    ruhsatHazirlamaEksikleri: '',
+    belediyeyeTeslimEdildi: '',
+    belediyeTeslimTarihi: '',
+    onayliProjeleriTeslimAlmaTarihi: '',
+    ruhsatTarihi: '',
+    notlar: ''
+  });
+
+  useEffect(() => {
+    fetchLicenses();
+  }, []);
+
+  const fetchLicenses = async () => {
+    try {
+      const response = await api.get('/licenses');
+      setLicenses(response.data);
+    } catch (error) {
+      toast.error('Ruhsat kayıtları yüklenirken hata oluştu');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      insaatIsmi: '',
+      yibfNo: '',
+      ruhsatEvraklariTamam: '',
+      projelerKontrolEdildi: '',
+      projeDurumu: '',
+      arsivdeOnayliProjeler: '',
+      dijitalArsivYapildi: '',
+      dijitalArsivTarihi: '',
+      ruhsatHazirlamaEksikleri: '',
+      belediyeyeTeslimEdildi: '',
+      belediyeTeslimTarihi: '',
+      onayliProjeleriTeslimAlmaTarihi: '',
+      ruhsatTarihi: '',
+      notlar: ''
+    });
+    setEditingId(null);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+
+    try {
+      if (editingId) {
+        await api.put(`/licenses/${editingId}`, formData);
+        toast.success('Ruhsat kaydı başarıyla güncellendi');
+      } else {
+        await api.post('/licenses', formData);
+        toast.success('Ruhsat kaydı başarıyla oluşturuldu');
+      }
+      setDialogOpen(false);
+      resetForm();
+      fetchLicenses();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'İşlem başarısız');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleEdit = (license) => {
+    setFormData(license);
+    setEditingId(license.id);
+    setDialogOpen(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Bu ruhsat kaydını silmek istediğinizden emin misiniz?')) return;
+
+    try {
+      await api.delete(`/licenses/${id}`);
+      toast.success('Ruhsat kaydı başarıyla silindi');
+      fetchLicenses();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Silme işlemi başarısız');
+    }
+  };
+
+  const filteredLicenses = licenses.filter(license =>
+    license.insaatIsmi.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    license.yibfNo.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const canEdit = user?.role === 'super_admin' || user?.role === 'admin';
+  const canDelete = user?.role === 'super_admin' || user?.role === 'admin';
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64" data-testid="licenses-loading">
+        <Loader2 className="w-8 h-8 animate-spin text-amber-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6" data-testid="licenses-page">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900" style={{fontFamily: 'Manrope, sans-serif'}}>
+            Ruhsat ve Proje Takibi
+          </h1>
+          <p className="text-slate-600 mt-1">Ruhsat ve proje süreçlerini yönetin</p>
+        </div>
+        <Dialog open={dialogOpen} onOpenChange={(open) => {
+          setDialogOpen(open);
+          if (!open) resetForm();
+        }}>
+          <DialogTrigger asChild>
+            <Button className="bg-amber-500 hover:bg-amber-600" data-testid="add-license-button">
+              <Plus className="w-4 h-4 mr-2" />
+              Yeni Ruhsat Kaydı
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{editingId ? 'Ruhsat Kaydını Düzenle' : 'Yeni Ruhsat Kaydı Ekle'}</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleSubmit} className="space-y-4" data-testid="license-form">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="insaatIsmi">İnşaat İsmi *</Label>
+                  <Input
+                    id="insaatIsmi"
+                    value={formData.insaatIsmi}
+                    onChange={(e) => setFormData({ ...formData, insaatIsmi: e.target.value })}
+                    required
+                    data-testid="insaat-ismi-input"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="yibfNo">YIBF No *</Label>
+                  <Input
+                    id="yibfNo"
+                    value={formData.yibfNo}
+                    onChange={(e) => setFormData({ ...formData, yibfNo: e.target.value })}
+                    required
+                    data-testid="yibf-no-input"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="ruhsatEvraklariTamam">Ruhsat Evrakları Tamam mı? *</Label>
+                  <Select
+                    value={formData.ruhsatEvraklariTamam}
+                    onValueChange={(value) => setFormData({ ...formData, ruhsatEvraklariTamam: value })}
+                    required
+                  >
+                    <SelectTrigger data-testid="ruhsat-evraklari-select">
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RUHSAT_EVRAK_DURUM.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="projelerKontrolEdildi">Projeler Kontrol Edildi mi? *</Label>
+                  <Select
+                    value={formData.projelerKontrolEdildi}
+                    onValueChange={(value) => setFormData({ ...formData, projelerKontrolEdildi: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RUHSAT_EVRAK_DURUM.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="projeDurumu">Proje Durumu *</Label>
+                  <Select
+                    value={formData.projeDurumu}
+                    onValueChange={(value) => setFormData({ ...formData, projeDurumu: value })}
+                    required
+                  >
+                    <SelectTrigger data-testid="proje-durumu-select">
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROJE_DURUM_OPTIONS.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="arsivdeOnayliProjeler">Arşivde Onaylı Projeler var mı? *</Label>
+                  <Select
+                    value={formData.arsivdeOnayliProjeler}
+                    onValueChange={(value) => setFormData({ ...formData, arsivdeOnayliProjeler: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RUHSAT_EVRAK_DURUM.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="dijitalArsivYapildi">Dijital Arşiv Yapıldı mı? *</Label>
+                  <Select
+                    value={formData.dijitalArsivYapildi}
+                    onValueChange={(value) => setFormData({ ...formData, dijitalArsivYapildi: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RUHSAT_EVRAK_DURUM.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dijitalArsivTarihi">Dijital Arşiv Tarihi</Label>
+                  <Input
+                    id="dijitalArsivTarihi"
+                    type="date"
+                    value={formData.dijitalArsivTarihi}
+                    onChange={(e) => setFormData({ ...formData, dijitalArsivTarihi: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ruhsatHazirlamaEksikleri">Ruhsat Hazırlama Eksikleri var mı? *</Label>
+                <Select
+                  value={formData.ruhsatHazirlamaEksikleri}
+                  onValueChange={(value) => setFormData({ ...formData, ruhsatHazirlamaEksikleri: value })}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Durum seçin" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {RUHSAT_EVRAK_DURUM.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="belediyeyeTeslimEdildi">Belediyeye Teslim Edildi mi? *</Label>
+                  <Select
+                    value={formData.belediyeyeTeslimEdildi}
+                    onValueChange={(value) => setFormData({ ...formData, belediyeyeTeslimEdildi: value })}
+                    required
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Durum seçin" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RUHSAT_EVRAK_DURUM.map((option) => (
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="belediyeTeslimTarihi">Belediye Teslim Tarihi</Label>
+                  <Input
+                    id="belediyeTeslimTarihi"
+                    type="date"
+                    value={formData.belediyeTeslimTarihi}
+                    onChange={(e) => setFormData({ ...formData, belediyeTeslimTarihi: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="onayliProjeleriTeslimAlmaTarihi">Onaylı Projeleri Teslim Alma Tarihi</Label>
+                  <Input
+                    id="onayliProjeleriTeslimAlmaTarihi"
+                    type="date"
+                    value={formData.onayliProjeleriTeslimAlmaTarihi}
+                    onChange={(e) => setFormData({ ...formData, onayliProjeleriTeslimAlmaTarihi: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="ruhsatTarihi">Ruhsat Tarihi</Label>
+                  <Input
+                    id="ruhsatTarihi"
+                    type="date"
+                    value={formData.ruhsatTarihi}
+                    onChange={(e) => setFormData({ ...formData, ruhsatTarihi: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="notlar">Notlar</Label>
+                <Textarea
+                  id="notlar"
+                  value={formData.notlar}
+                  onChange={(e) => setFormData({ ...formData, notlar: e.target.value })}
+                  rows={3}
+                  data-testid="notlar-input"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setDialogOpen(false);
+                    resetForm();
+                  }}
+                  data-testid="cancel-button"
+                >
+                  İptal
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-amber-500 hover:bg-amber-600"
+                  disabled={saving}
+                  data-testid="submit-button"
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Kaydediliyor...
+                    </>
+                  ) : editingId ? 'Güncelle' : 'Kaydet'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+              <Input
+                placeholder="İnşaat ismi veya YIBF No ile ara..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+                data-testid="search-input"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {filteredLicenses.length === 0 ? (
+            <div className="text-center py-12 text-slate-500">
+              <FileCheck className="w-12 h-12 mx-auto mb-4 text-slate-300" />
+              <p>Henüz ruhsat kaydı yok</p>
+            </div>
+          ) : (
+            <Accordion type="single" collapsible className="w-full">
+              {filteredLicenses.map((license, index) => (
+                <AccordionItem key={license.id} value={license.id} data-testid={`license-item-${index}`}>
+                  <AccordionTrigger className="hover:no-underline">
+                    <div className="flex items-center justify-between w-full pr-4">
+                      <div className="text-left">
+                        <h3 className="font-semibold text-lg">{license.insaatIsmi}</h3>
+                        <p className="text-sm text-slate-600">YIBF No: {license.yibfNo}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleEdit(license);
+                            }}
+                            data-testid={`edit-button-${index}`}
+                          >
+                            <Edit className="w-4 h-4" />
+                          </Button>
+                        )}
+                        {canDelete && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(license.id);
+                            }}
+                            data-testid={`delete-button-${index}`}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="p-4 bg-slate-50 rounded-lg space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Ruhsat Evrakları</p>
+                          <p className="text-sm text-slate-600">{license.ruhsatEvraklariTamam}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Projeler Kontrol</p>
+                          <p className="text-sm text-slate-600">{license.projelerKontrolEdildi}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Proje Durumu</p>
+                          <p className="text-sm text-slate-600">{license.projeDurumu}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Arşivde Onaylı Projeler</p>
+                          <p className="text-sm text-slate-600">{license.arsivdeOnayliProjeler}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Dijital Arşiv</p>
+                          <p className="text-sm text-slate-600">{license.dijitalArsivYapildi}</p>
+                        </div>
+                        {license.dijitalArsivTarihi && (
+                          <div>
+                            <p className="text-sm font-medium text-slate-700">Dijital Arşiv Tarihi</p>
+                            <p className="text-sm text-slate-600">{license.dijitalArsivTarihi}</p>
+                          </div>
+                        )}
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Ruhsat Hazırlama Eksikleri</p>
+                          <p className="text-sm text-slate-600">{license.ruhsatHazirlamaEksikleri}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Belediyeye Teslim</p>
+                          <p className="text-sm text-slate-600">{license.belediyeyeTeslimEdildi}</p>
+                        </div>
+                        {license.belediyeTeslimTarihi && (
+                          <div>
+                            <p className="text-sm font-medium text-slate-700">Belediye Teslim Tarihi</p>
+                            <p className="text-sm text-slate-600">{license.belediyeTeslimTarihi}</p>
+                          </div>
+                        )}
+                        {license.onayliProjeleriTeslimAlmaTarihi && (
+                          <div>
+                            <p className="text-sm font-medium text-slate-700">Onaylı Projeler Teslim Alma Tarihi</p>
+                            <p className="text-sm text-slate-600">{license.onayliProjeleriTeslimAlmaTarihi}</p>
+                          </div>
+                        )}
+                        {license.ruhsatTarihi && (
+                          <div>
+                            <p className="text-sm font-medium text-slate-700">Ruhsat Tarihi</p>
+                            <p className="text-sm text-slate-600">{license.ruhsatTarihi}</p>
+                          </div>
+                        )}
+                      </div>
+                      {license.notlar && (
+                        <div>
+                          <p className="text-sm font-medium text-slate-700">Notlar</p>
+                          <p className="text-sm text-slate-600 whitespace-pre-wrap">{license.notlar}</p>
+                        </div>
+                      )}
+                      <div className="pt-2 border-t">
+                        <p className="text-xs text-slate-500">
+                          Oluşturan: {license.createdByName} • {new Date(license.createdAt).toLocaleString('tr-TR')}
+                        </p>
+                      </div>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default Licenses;
