@@ -37,7 +37,7 @@ const Layout = ({ children }) => {
     { path: '/activities', label: 'Aktivite Logları', icon: Activity },
     ...(user?.role !== 'user' ? [
       { path: '/mesajlasma', label: 'Mesajlaşma', icon: MessageCircle },
-      { path: '/super-admin-reports', label: '⚠️ Eksiklik Raporları', icon: AlertCircle }
+      { path: '/super-admin-reports', label: 'Eksiklik Raporları', icon: FileText }
     ] : []),
     ...(user?.role === 'super_admin' ? [
       { path: '/reports', label: 'Raporlar', icon: BarChart3 },
